@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 
 interface ProcessedImage {
@@ -10,25 +10,10 @@ interface ProcessedImage {
 }
 
 export default function Home() {
-  const [apiKey, setApiKey] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<ProcessedImage | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-
-  // 从 localStorage 加载 API Key
-  useEffect(() => {
-    const savedKey = localStorage.getItem('removeBgApiKey');
-    if (savedKey) {
-      setApiKey(savedKey);
-    }
-  }, []);
-
-  // 保存 API Key 到 localStorage
-  const handleApiKeyChange = (value: string) => {
-    setApiKey(value);
-    localStorage.setItem('removeBgApiKey', value);
-  };
 
   // 处理文件上传
   const handleFile = useCallback(async (file: File) => {
@@ -57,30 +42,21 @@ export default function Home() {
     };
     reader.readAsDataURL(file);
 
-    // 调用 Remove.bg API
-    if (!apiKey) {
-      setError('请先输入 Remove.bg API Key');
-      return;
-    }
-
     setIsProcessing(true);
     
     try {
       const formData = new FormData();
       formData.append('image_file', file);
-      formData.append('size', 'auto');
 
-      const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+      // 调用本地 API
+      const response = await fetch('/api/remove-bg', {
         method: 'POST',
-        headers: {
-          'X-Api-Key': apiKey,
-        },
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errors?.[0]?.title || '处理失败');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '处理失败');
       }
 
       const blob = await response.blob();
@@ -88,11 +64,11 @@ export default function Home() {
       
       setImage(prev => prev ? { ...prev, processed: processedUrl } : null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '处理失败，请检查 API Key 和网络');
+      setError(err instanceof Error ? err.message : '处理失败，请稍后重试');
     } finally {
       setIsProcessing(false);
     }
-  }, [apiKey]);
+  }, []);
 
   // 拖拽事件处理
   const handleDragOver = (e: React.DragEvent) => {
@@ -143,23 +119,6 @@ export default function Home() {
             3 秒去除图片背景，无需设计技能
           </p>
         </header>
-
-        {/* API Key Input */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-white/20">
-          <label className="block text-white text-sm font-medium mb-2">
-            Remove.bg API Key
-          </label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => handleApiKeyChange(e.target.value)}
-            placeholder="输入你的 Remove.bg API Key"
-            className="w-full px-4 py-3 rounded-xl bg-white/90 border-0 focus:ring-2 focus:ring-white/50 text-gray-800 placeholder-gray-400"
-          />
-          <p className="text-white/60 text-xs mt-2">
-            API Key 仅存储在浏览器本地，不会上传到服务器
-          </p>
-        </div>
 
         {/* Error Message */}
         {error && (

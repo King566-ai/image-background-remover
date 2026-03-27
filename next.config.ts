@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  allowedDevOrigins: ['regulation-bikini-trustees-placement.trycloudflare.com'],
 };
 
 export default nextConfig;
