@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  distDir: 'dist',
+  // 使用 Cloudflare Pages 适配器，不需要 output: 'export'
   images: {
     unoptimized: true,
   },

@@ -1,0 +1,9 @@
+name = "image-background-remover"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run pages:build"
+
+[[env_vars]]
+name = "REMOVE_BG_API_KEY"
+value = "WFCGM42aBfPYaNegAGwjkJCc"
