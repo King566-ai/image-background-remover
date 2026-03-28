@@ -48,7 +48,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('image_file', file);
 
-      // 调用本地 API
+      // 调用 Cloudflare Pages Function API
       const response = await fetch('/api/remove-bg', {
         method: 'POST',
         body: formData,
